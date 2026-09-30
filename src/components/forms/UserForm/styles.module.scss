@@ -1,0 +1,41 @@
+$coral: #f65261;
+
+.userForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 460px;
+}
+
+.title {
+  font-size: 40px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.error {
+  margin-top: -12px;
+  font-size: 13px;
+  color: $coral;
+}
+
+.switchText {
+  margin: 4px 0 0;
+  font-size: 15px;
+  color: #d6d6d6;
+
+  a {
+    color: $coral;
+    text-transform: capitalize;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: auto;
+}

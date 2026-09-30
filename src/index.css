@@ -1,0 +1,70 @@
+:root {
+  --coral: #f65261;
+  --coral-hover: #f43c4d;
+  --dark-900: #232323;
+  --dark-850: #2a2a2a;
+  --grey-700: #424242;
+  --grey-500: #555555;
+  --text: #ffffff;
+  --text-muted: #b3b3b3;
+
+  font-family: Inter, 'Montserrat', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: var(--text);
+  background-color: var(--dark-900);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--dark-900);
+  color: var(--text);
+}
+
+#root {
+  width: 100%;
+}
+
+a {
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--coral);
+}
+
+a:hover {
+  color: var(--coral-hover);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 400;
+}
+
+button {
+  font-family: inherit;
+  font-size: 1em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: inherit;
+}
+
+button:focus,
+button:focus-visible {
+  outline: none;
+}
