@@ -14,7 +14,7 @@ import { Modal, PrivateRoute } from '@/common';
 import { useAppDispatch } from '@/store/hooks';
 import { getUserThunk } from './store/thunks';
 import { ROUTE_PATHS, USER_FORM_MODES } from '@/constants';
-import { authEnabled } from '@/services/api';
+import { authEnabled, movieProvider } from '@/services/api';
 import { readSessionToken } from '@/services/session';
 import styles from './App.module.scss';
 
@@ -74,7 +74,17 @@ function App() {
 				<Route path={ROUTE_PATHS.LOGIN} element={<UserForm mode={USER_FORM_MODES.LOGIN} />} />
 				<Route path={ROUTE_PATHS.REGISTRATION} element={<UserForm mode={USER_FORM_MODES.REGISTRATION} />} />
 			</Routes>
-			<footer className={styles.footer}>FrameFinder</footer>
+			<footer className={styles.footer}>
+				<span>Movie Finder</span>
+				{movieProvider === 'tmdb' && (
+					<section aria-label='Data credits'>
+						<a href='https://www.themoviedb.org'>
+							<img width='80' alt='TMDB' src='/tmdb-logo.svg' />
+						</a>
+						<small>This product uses the TMDB API but is not endorsed or certified by TMDB.</small>
+					</section>
+				)}
+			</footer>
 		</div>
 	);
 }

@@ -106,7 +106,7 @@ describe('MovieForm Component', () => {
 			expect(screen.getByPlaceholderText(/enter title/i)).toHaveValue('New Movie');
 		});
 
-		it('shows SUCCESS notification after successful adding/update', async () => {
+		it('shows SUCCESS notification after successful creation', async () => {
 			renderWithProviders(<MovieForm />, {
 				preloadedState,
 				route: '/movies/add',
@@ -177,6 +177,19 @@ describe('MovieForm Component', () => {
 			await waitFor(() => {
 				expect(screen.getByText(/congratulations!/i)).toBeInTheDocument();
 			});
+			expect(global.fetch).toHaveBeenCalledWith(
+				'http://localhost:4000/movies',
+				expect.objectContaining({ method: 'POST' })
+			);
+			expect(JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body)).toEqual({
+				title: 'New Movie',
+				release_date: '2025-05-14',
+				poster_path: 'HTTPS://movie.png',
+				vote_average: 10,
+				runtime: 120,
+				overview: 'Movie description',
+				genres: ['Action', 'Drama', 'Comedy'],
+			});
 		});
 	});
 
@@ -195,6 +208,36 @@ describe('MovieForm Component', () => {
 			});
 
 			expect(screen.getByText(/edit movie/i)).toBeInTheDocument();
+		});
+
+		it('saves edits through PUT and updates Redux with the returned movie', async () => {
+			const updated = { ...preloadedState.movies.list[0], title: 'Updated title' };
+			(global.fetch as jest.Mock).mockResolvedValueOnce({
+				ok: true,
+				status: 200,
+				text: async () => JSON.stringify(updated),
+			});
+			const { store } = renderWithProviders(<MovieForm />, { preloadedState });
+			fireEvent.change(screen.getByDisplayValue('Test Movie'), { target: { value: 'Updated title' } });
+			fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+			await screen.findByText(/congratulations/i);
+			expect(global.fetch).toHaveBeenCalledWith(
+				'http://localhost:4000/movies/1',
+				expect.objectContaining({ method: 'PUT' })
+			);
+			expect(JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body)).toEqual(updated);
+			expect(store.getState().movies.list[0]).toEqual(updated);
+		});
+
+		it('preserves input and the original Redux movie after a failed edit', async () => {
+			(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 403 });
+			const { store } = renderWithProviders(<MovieForm />, { preloadedState });
+			fireEvent.change(screen.getByDisplayValue('Test Movie'), { target: { value: 'Unsaved title' } });
+			fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+			expect(await screen.findByRole('alert')).toHaveTextContent('not allowed');
+			expect(screen.getByDisplayValue('Unsaved title')).toBeInTheDocument();
+			expect(store.getState().movies.list[0]).toEqual(preloadedState.movies.list[0]);
+			expect(screen.queryByText(/congratulations/i)).not.toBeInTheDocument();
 		});
 
 		it('pre-fills form with existing movie data', () => {

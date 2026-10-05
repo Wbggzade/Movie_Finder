@@ -25,10 +25,12 @@ export interface MoviesQuery {
 export interface MoviesPage {
 	items: Movie[];
 	hasMore: boolean;
+	genres?: string[];
 }
 
 declare global {
 	interface Movie {
+		isSummary?: boolean;
 		id: number;
 		title: string;
 		vote_average: number;

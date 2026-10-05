@@ -1,4 +1,4 @@
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { MovieTile } from '../components/MoviesList/MovieTile/MovieTile.tsx';
 import { renderWithProviders } from '@/store/_mock.tsx';
 import { UserState } from '@/store/userSlice.ts';
@@ -118,5 +118,42 @@ describe('MovieTile Component', () => {
 		expect(screen.queryByText('Test Movie')).toBeInTheDocument();
 	});
 
-	it('deletes the movie and navigates to /movies on CONFIRM button click', () => {});
+	it('deletes only after confirmation, sends the token and preserves the query', async () => {
+		const movie = { ...mockProps, runtime: 90, overview: 'Test', vote_average: 7 };
+		(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, status: 204 });
+		localStorage.setItem('token', 'test-session');
+		const { store } = renderWithProviders(<MovieTile {...mockProps} />, {
+			route: '/movies?search=Test',
+			preloadedState: { user: mockedAdminUser as UserState, movies: { list: [movie] } },
+		});
+		fireEvent.click(screen.getByTestId('menu-button'));
+		fireEvent.click(screen.getByTestId('delete-button'));
+		expect(global.fetch).not.toHaveBeenCalled();
+		fireEvent.click(screen.getByRole('button', { name: 'CONFIRM' }));
+		await waitFor(() => expect(store.getState().movies.list).toEqual([]));
+		expect(global.fetch).toHaveBeenCalledWith(
+			'http://localhost:4000/movies/123',
+			expect.objectContaining({
+				method: 'DELETE',
+				headers: expect.objectContaining({ Authorization: 'Bearer test-session' }),
+			})
+		);
+		expect(mockNavigate).toHaveBeenCalledWith('/movies?search=Test');
+		expect(screen.queryByText('DELETE MOVIE')).not.toBeInTheDocument();
+	});
+
+	it('keeps the movie and confirmation open when deletion fails', async () => {
+		const movie = { ...mockProps, runtime: 90, overview: 'Test', vote_average: 7 };
+		(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 503 });
+		const { store } = renderWithProviders(<MovieTile {...mockProps} />, {
+			preloadedState: { user: mockedAdminUser as UserState, movies: { list: [movie] } },
+		});
+		fireEvent.click(screen.getByTestId('menu-button'));
+		fireEvent.click(screen.getByTestId('delete-button'));
+		fireEvent.click(screen.getByRole('button', { name: 'CONFIRM' }));
+		expect(await screen.findByRole('alert')).toHaveTextContent('503');
+		expect(store.getState().movies.list).toEqual([movie]);
+		expect(screen.getByRole('button', { name: 'CONFIRM' })).toBeEnabled();
+		expect(mockNavigate).not.toHaveBeenCalled();
+	});
 });

@@ -39,7 +39,7 @@ const moviesSlice = createSlice({
 				state.currentRequestId = action.meta.requestId;
 			})
 			.addCase(fetchMoviesThunk.fulfilled, (state: MoviesState, action) => {
-				if (state.currentRequestId && state.currentRequestId !== action.meta.requestId) return;
+				if (state.currentRequestId !== action.meta.requestId) return;
 				state.loading = false;
 				state.currentRequestId = null;
 				state.list =
@@ -50,14 +50,16 @@ const moviesSlice = createSlice({
 								...action.payload.items.filter((movie) => !state.list.some((item) => item.id === movie.id)),
 							];
 				state.hasMore = action.payload.hasMore;
-				if (action.meta.arg.filter === 'all') {
+				if (action.payload.genres) {
+					state.genres = action.payload.genres;
+				} else if (action.meta.arg.filter === 'all') {
 					state.genres = Array.from(
 						new Set([...state.genres, ...action.payload.items.flatMap((movie) => movie.genres)])
 					);
 				}
 			})
 			.addCase(fetchMoviesThunk.rejected, (state: MoviesState, action) => {
-				if (state.currentRequestId && state.currentRequestId !== action.meta.requestId) return;
+				if (state.currentRequestId !== action.meta.requestId) return;
 				state.loading = false;
 				state.currentRequestId = null;
 				if (!action.meta.aborted) state.error = action.payload ?? action.error.message ?? 'Failed to fetch movies';
@@ -84,6 +86,7 @@ const moviesSlice = createSlice({
 				state.list.push(action.payload);
 			})
 			.addCase(updateMovieThunk.fulfilled, (state: MoviesState, action) => {
+				if (state.detail?.id === action.payload.id) state.detail = action.payload;
 				const index = state.list.findIndex((movie) => movie.id === action.payload.id);
 				if (index !== -1) {
 					state.list[index] = action.payload;

@@ -17,5 +17,5 @@ export const selectIsAuth = (state: RootState) => state.user.isAuth;
 export const selectUserToken = (state: RootState) => state.user.token;
 
 export const selectMovieById = (id?: number | string) => (state: RootState) =>
-	state.movies.list.find((movie) => movie.id === Number(id)) ??
-	(state.movies.detail?.id === Number(id) ? state.movies.detail : undefined);
+	(state.movies.detail?.id === Number(id) ? state.movies.detail : undefined) ??
+	state.movies.list.find((movie) => movie.id === Number(id));

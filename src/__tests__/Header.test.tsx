@@ -1,14 +1,26 @@
 import { screen, fireEvent } from '@testing-library/react';
 
+import { useLocation } from 'react-router-dom';
+
+const LocationProbe = () => {
+	const location = useLocation();
+	return (
+		<output data-testid='location'>
+			{location.pathname}
+			{location.search}
+		</output>
+	);
+};
+
 import { Header } from '@/components';
 import { renderWithProviders } from '@/store/_mock';
 import { UserState } from '@/store/userSlice';
 
 describe('Header Component', () => {
-	it('should contain the FrameFinder logo', () => {
+	it('should contain the Movie Finder logo', () => {
 		renderWithProviders(<Header />, { route: '/movies' });
 
-		expect(screen.getByText(/framefinder/i)).toBeInTheDocument();
+		expect(screen.getByText(/movie finder/i)).toBeInTheDocument();
 	});
 
 	it('should render the search field with magnifying glass for route /movies/:movieId', () => {
@@ -67,12 +79,18 @@ describe('Header Component', () => {
 		expect(screen.getByRole('button', { name: /search/i })).toBeInTheDocument();
 	});
 
-	it('should navigate to /movies on logo click', () => {
-		renderWithProviders(<Header />, { route: '/movies' });
+	it('navigates from login to movies and preserves query parameters on logo click', () => {
+		renderWithProviders(
+			<>
+				<Header />
+				<LocationProbe />
+			</>,
+			{ route: '/login?search=Arrival' }
+		);
 
-		const logo = screen.getByText(/framefinder/i);
+		const logo = screen.getByText(/movie finder/i);
 		fireEvent.click(logo);
 
-		expect(['/movies', '/']).toContain(window.location.pathname);
+		expect(screen.getByTestId('location')).toHaveTextContent('/movies?search=Arrival');
 	});
 });

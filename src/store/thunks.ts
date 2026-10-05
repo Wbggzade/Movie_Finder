@@ -1,7 +1,9 @@
+import { tmdb } from '@/services/tmdb';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import type { LoginCredentials, MovieCreatePayload, MovieUpdatePayload, MoviesPage, MoviesQuery } from '@/types';
 import {
 	ApiError,
+	movieProvider,
 	apiRequest,
 	authEnabled,
 	movieManagementEnabled,
@@ -22,6 +24,7 @@ export const fetchMoviesThunk = createAsyncThunk<MoviesPage, MoviesQuery, Reject
 	'movies/fetchMovies',
 	async (query, { rejectWithValue, signal }) => {
 		try {
+			if (movieProvider === 'tmdb') return await tmdb.list(query, signal);
 			const params = new URLSearchParams({
 				offset: String(query.offset),
 				limit: String(query.limit),
@@ -41,6 +44,7 @@ export const fetchMovieByIdThunk = createAsyncThunk<Movie, string, RejectConfig>
 	'movies/fetchMovieById',
 	async (id, { rejectWithValue, signal }) => {
 		try {
+			if (movieProvider === 'tmdb') return await tmdb.detail(id, signal);
 			return requireMovie(await apiRequest<unknown>(`/movies/${encodeURIComponent(id)}`, { signal }));
 		} catch (error) {
 			return rejectWithValue(error instanceof Error ? error.message : 'The movie could not be loaded.');

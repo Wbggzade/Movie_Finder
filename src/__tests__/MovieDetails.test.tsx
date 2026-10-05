@@ -1,9 +1,10 @@
-import { screen } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
+import { Routes, Route } from 'react-router-dom';
 import { MovieDetails } from '../components/MovieDetails/MovieDetails';
 import { renderWithProviders } from '@/store/_mock';
 
-const mockMovie = {
-	id: '1',
+const movie: Movie = {
+	id: 1,
 	title: 'Inception',
 	overview: 'A mind-bending thriller.',
 	release_date: '2010-07-16',
@@ -12,37 +13,36 @@ const mockMovie = {
 	runtime: 148,
 	vote_average: 8.8,
 };
-
-jest.mock('@/store/hooks', () => ({
-	useAppSelector: () => mockMovie,
-	useAppDispatch: () => jest.fn(),
-}));
-
-describe('MovieDetails Component', () => {
-	it('renders the MovieDetails component with all required elements', () => {
-		renderWithProviders(<MovieDetails />, { route: '/movies/1' });
-
-		// Check poster
-		const poster = screen.queryByAltText('Inception');
-		expect(poster).toBeInTheDocument();
-		expect(poster).toHaveAttribute('src', '/inception.jpg');
-
-		// Check movie name
-		expect(screen.queryByText('Inception')).toBeInTheDocument();
-
-		// Check genre
-		expect(screen.queryByText('Action & Sci-Fi')).toBeInTheDocument();
-
-		// Check release year
-		expect(screen.queryByText('2010')).toBeInTheDocument();
-
-		// Check rating
-		expect(screen.queryByText('8.8')).toBeInTheDocument();
-
-		// Check duration
-		expect(screen.queryByText('2h 28min')).toBeInTheDocument();
-
-		// Check description
-		expect(screen.queryByText('A mind-bending thriller.')).toBeInTheDocument();
-	});
+const renderDetails = (list: Movie[] = []) =>
+	renderWithProviders(
+		<Routes>
+			<Route path='/movies/:movieId' element={<MovieDetails />} />
+		</Routes>,
+		{ route: '/movies/1', preloadedState: { movies: { list } } }
+	);
+it('renders complete cached details using real Redux selectors', () => {
+	renderDetails([movie]);
+	expect(screen.getByRole('heading', { name: 'Inception' })).toBeInTheDocument();
+	expect(screen.getByAltText('Inception')).toHaveAttribute('src', '/inception.jpg');
+	expect(screen.getByText('Action & Sci-Fi')).toBeInTheDocument();
+	expect(screen.getByText('2h 28min')).toBeInTheDocument();
+	expect(screen.getByText(movie.overview)).toBeInTheDocument();
+	expect(fetch).not.toHaveBeenCalled();
+});
+it('loads full details when the catalogue contains only a summary', async () => {
+	(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, status: 200, text: async () => JSON.stringify(movie) });
+	const { store } = renderDetails([{ ...movie, runtime: 0, isSummary: true }]);
+	expect(screen.getByRole('status')).toHaveTextContent('Loading movie details');
+	expect(await screen.findByText('2h 28min')).toBeInTheDocument();
+	expect(store.getState().movies.detail).toEqual(movie);
+	expect(fetch).toHaveBeenCalledTimes(1);
+});
+it('shows a detail error and retries', async () => {
+	(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 503 });
+	renderDetails();
+	expect(await screen.findByRole('alert')).toHaveTextContent('503');
+	(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, status: 200, text: async () => JSON.stringify(movie) });
+	fireEvent.click(screen.getByRole('button', { name: 'RETRY' }));
+	expect(await screen.findByText('2h 28min')).toBeInTheDocument();
+	expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 });

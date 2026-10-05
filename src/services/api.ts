@@ -11,9 +11,13 @@ export class ApiError extends Error {
 declare const __API_BASE_URL__: string;
 
 export const apiBaseUrl = (typeof __API_BASE_URL__ === 'undefined' ? '' : __API_BASE_URL__).replace(/\/$/, '');
+export const movieProvider = typeof __MOVIE_PROVIDER__ === 'undefined' ? 'tmdb' : __MOVIE_PROVIDER__;
 export const authEnabled = typeof __AUTH_ENABLED__ !== 'undefined' && __AUTH_ENABLED__;
 export const movieManagementEnabled =
-	typeof __MOVIE_MANAGEMENT_ENABLED__ !== 'undefined' && __MOVIE_MANAGEMENT_ENABLED__ && authEnabled;
+	movieProvider === 'custom' &&
+	typeof __MOVIE_MANAGEMENT_ENABLED__ !== 'undefined' &&
+	__MOVIE_MANAGEMENT_ENABLED__ &&
+	authEnabled;
 
 export const apiRequest = async <T>(
 	path: string,

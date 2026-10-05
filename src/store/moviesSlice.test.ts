@@ -33,5 +33,19 @@ describe('movies reducer', () => {
 		});
 		expect(store.getState().movies.list).toEqual([movie]);
 		expect(store.getState().movies.genres).toEqual(['Drama']);
+		store.dispatch({
+			type: 'movies/fetchMovies/fulfilled',
+			payload: { items: [], hasMore: true },
+			meta: { requestId: 'older', arg: query },
+		});
+		store.dispatch({
+			type: 'movies/fetchMovies/rejected',
+			payload: 'Stale error',
+			meta: { requestId: 'older', arg: query },
+			error: {},
+		});
+		expect(store.getState().movies.list).toEqual([movie]);
+		expect(store.getState().movies.error).toBeNull();
+		expect(store.getState().movies.hasMore).toBe(false);
 	});
 });

@@ -12,6 +12,7 @@ playwright-report
 test-results
 dist
 dist-ssr
+.e2e-dist
 *.local
 junit.xml
 coverage
@@ -27,3 +28,8 @@ coverage
 *.sln
 *.sw?
 .claude
+
+# Local API configuration
+.env
+.env.*
+!.env.example

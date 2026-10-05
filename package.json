@@ -1,12 +1,12 @@
 {
-  "name": "framefinder",
+  "name": "movie-finder",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "test": "jest --watchAll=false --reporters=default --reporters=jest-junit",
     "test:local": "jest --watchAll",
-    "test:e2e": "playwright test --config=playwright.config.ts",
+    "test:e2e": "tsc --project tsconfig.e2e.json && playwright test --config=playwright.config.ts",
     "dev": "vite",
     "build": "tsc && vite build",
     "coverage": "jest --watchAll=false --coverage --collectCoverageFrom=src/**/*.ts --collectCoverageFrom=src/**/*.tsx",

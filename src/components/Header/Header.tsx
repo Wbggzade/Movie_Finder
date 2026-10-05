@@ -12,7 +12,7 @@ import { useEffect, useState, type KeyboardEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Input } from '@/common';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { selectUser } from '@/store/selectors';
+import { selectUser, selectIsAdmin } from '@/store/selectors';
 import { logoutUserThunk } from '@/store/thunks';
 import { ROUTE_PATHS } from '@/constants';
 import styles from './styles.module.scss'; // feel free to add any styles you need
@@ -22,13 +22,13 @@ export const Header = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [searchParams, setSearchParams] = useSearchParams();
-	const { name, isAuth, role } = useAppSelector(selectUser);
+	const { name, isAuth } = useAppSelector(selectUser);
 
 	const [query, setQuery] = useState(searchParams.get('search') ?? '');
 	const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
 	const isMoviesListPage = location.pathname === ROUTE_PATHS.HOME || location.pathname === ROUTE_PATHS.MOVIES;
-	const isAdmin = role === 'admin';
+	const isAdmin = useAppSelector(selectIsAdmin);
 
 	useEffect(() => {
 		setQuery(searchParams.get('search') ?? '');
@@ -67,7 +67,7 @@ export const Header = () => {
 		<div className={styles.headerContainer}>
 			<div className={styles.topBar}>
 				<Link className={styles.logo} to={`${ROUTE_PATHS.MOVIES}${location.search}`}>
-					FrameFinder
+					Movie Finder
 				</Link>
 
 				<div className={styles.topActions}>

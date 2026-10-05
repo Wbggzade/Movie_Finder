@@ -10,7 +10,7 @@ const mockedUserDataResponse = {
 	role: 'user',
 	name: 'John Doe',
 	token: 'mockToken',
-	email: 'John_Doe@mail.com',
+	email: 'viewer@example.test',
 	isAuth: true,
 } as UserState;
 
@@ -19,6 +19,7 @@ describe('Search', () => {
 		jest.spyOn(thunks, 'fetchMoviesThunk').mockImplementation(
 			(query) =>
 				(async (dispatch: AppDispatch) => {
+					dispatch({ type: 'movies/fetchMovies/pending', meta: { requestId: 'test-request', arg: query } });
 					const filteredMovies = mockedMoviesList
 						.filter((movie) => !query.search || movie.title.toLowerCase().includes(query.search.toLowerCase()))
 						.filter((movie) => query.filter === 'all' || movie.genres.includes(query.filter))
@@ -31,7 +32,7 @@ describe('Search', () => {
 					dispatch({
 						type: 'movies/fetchMovies/fulfilled',
 						payload: { items: items as Movie[], hasMore: filteredMovies.length > query.offset + items.length },
-						meta: { arg: query },
+						meta: { requestId: 'test-request', arg: query },
 					});
 				}) as unknown as ReturnType<typeof thunks.fetchMoviesThunk>
 		);

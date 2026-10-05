@@ -7,6 +7,8 @@ export default defineConfig(({ mode }) => {
 	return {
 		plugins: [react(), tsconfigPaths()],
 		define: {
+			__MOVIE_PROVIDER__: JSON.stringify(env.VITE_MOVIE_PROVIDER ?? 'tmdb'),
+			__TMDB_API_KEY__: JSON.stringify(env.VITE_TMDB_API_KEY ?? ''),
 			__API_BASE_URL__: JSON.stringify(env.VITE_API_BASE_URL ?? ''),
 			__AUTH_ENABLED__: JSON.stringify(env.VITE_ENABLE_AUTH === 'true'),
 			__MOVIE_MANAGEMENT_ENABLED__: JSON.stringify(env.VITE_ENABLE_MOVIE_MANAGEMENT === 'true'),

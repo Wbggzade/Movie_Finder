@@ -27,11 +27,11 @@ export const MovieDetails = () => {
 	const dispatch = useAppDispatch();
 
 	useEffect(() => {
-		if (movieId && !movie) dispatch(fetchMovieByIdThunk(movieId));
+		if (movieId && (!movie || movie.isSummary)) dispatch(fetchMovieByIdThunk(movieId));
 	}, [dispatch, movieId, movie]);
 
-	if (detailLoading && !movie) return <p role='status'>Loading movie details...</p>;
-	if (detailError && !movie) {
+	if (detailLoading && (!movie || movie.isSummary)) return <p role='status'>Loading movie details...</p>;
+	if (detailError && (!movie || movie.isSummary)) {
 		return (
 			<div className={styles.movieDetails}>
 				<p role='alert'>{detailError}</p>
@@ -42,7 +42,7 @@ export const MovieDetails = () => {
 		);
 	}
 
-	if (!movie) {
+	if (!movie || movie.isSummary) {
 		return (
 			<div className={styles.movieDetails} role='status'>
 				Movie not found
@@ -71,7 +71,7 @@ export const MovieDetails = () => {
 				<p className={styles.genres}>{genres.join(' & ')}</p>
 				<div className={styles.meta}>
 					<span className={styles.year}>{release_date?.slice(0, 4)}</span>
-					<span className={styles.runtime}>{formatRuntime(runtime)}</span>
+					<span className={styles.runtime}>{runtime > 0 ? formatRuntime(runtime) : 'Runtime unavailable'}</span>
 				</div>
 				<p className={styles.overview}>{overview}</p>
 			</div>
